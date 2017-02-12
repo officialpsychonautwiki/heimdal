@@ -37,21 +37,7 @@ Countly.prototype.device_id;
 /** @type {Countly} */
 window.Countly;
 
-class Events {
-	constructor () {
-		this._events = {};
-	}
-
-	on (evt, fn) {
-		this._events[evt] = fn;
-	}
-
-	emit (evt, ...args) {
-		this._events[evt](...args);
-	}
-}
-
-class Heimdal extends Events {
+class Heimdal {
 	constructor () {
 		super();
 
