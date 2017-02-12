@@ -1,4 +1,43 @@
-(new class extends (class {
+/* CLOSURE COMPILER EXTERNS */
+
+// mw.config.values..
+
+/**
+ * @constructor
+ */
+function MWConfig() {}
+
+/**
+ * @typedef {{
+ *   wgUserName: (string|undefined),
+ *   wgPageName: (string|undefined),
+ * }}
+ */
+MWConfig.prototype.values;
+
+/**
+ * @constructor
+ */
+function MWBase() {}
+
+/** @type {MWConfig} */
+MWBase.prototype.config;
+
+/** @type {MWBase} */
+window.mw;
+
+/**
+ * @constructor
+ */
+function Countly() {}
+
+/** @type (string|undefined) */
+Countly.prototype.device_id;
+
+/** @type {Countly} */
+window.Countly;
+
+class Events {
 	constructor () {
 		this._events = {};
 	}
@@ -10,7 +49,9 @@
 	emit (evt, ...args) {
 		this._events[evt](...args);
 	}
-}) {
+}
+
+class Heimdal extends Events {
 	constructor () {
 		super();
 
@@ -37,7 +78,7 @@
 		let clientId;
 
 		try {
-			clientId = window.Countly.device_id;
+			clientId = window['Countly']['device_id'];
 		} catch (e) {}
 
 		if (!clientId) {
@@ -63,7 +104,7 @@
 		let user = null;
 
 		try {
-			user = mw.config.values.wgUserName
+			user = window['mw']['config']['values']['wgUserName'];
 		} catch(err) { this._ingestError(err) }
 
 		this._eventHeap.push(`${this._clientId};${Date.now()};${user};${evt}`);
@@ -75,7 +116,7 @@
 
 		try {
 			window.sessionStorage._pcl = ts;
-			
+
 			if (ts === window.sessionStorage._pcl) {
 				window.sessionStorage.removeItem('_pcl');
 
@@ -85,7 +126,7 @@
 
 		try {
 			window.localStorage._pcl = ts;
-			
+
 			if (ts === window.localStorage._pcl) {
 				window.localStorage.removeItem('_pcl');
 
@@ -174,8 +215,6 @@
 
 	use (ref, plugin) {
 		this._plugins.push([ref, plugin]);
-
-		return this;
 	}
 
 	init () {
@@ -193,14 +232,22 @@
 			}
 		}
 	}
-}).use('t', ctx => {
-	ctx._ingestEvent(`t;${mw.config.values.wgPageName}`);
-}).use('a', ctx => {
+}
+
+let heimdal = new Heimdal();
+
+heimdal.use('t', ctx => {
+	ctx._ingestEvent(`t;${window['mw']['config']['values']['wgPageName']}`);
+});
+
+heimdal.use('a', ctx => {
 	$('a').click(evt => {
 		if (!evt.target || !evt.target.href) return;
 
 		if (!evt.target.href.match(/\#$/) && evt.target.match(/\/wiki\/(.*?)$/)) {
-			ctx._ingestEvent(`a;${mw.config.values.wgPageName};${evt.target.href.match(/\/wiki\/(.*?)$/)[1]}`)
+			ctx._ingestEvent(`a;${window['mw']['config']['values']['wgPageName']};${evt.target.href.match(/\/wiki\/(.*?)$/)[1]}`)
 		}
 	})
-}).init();
+});
+
+heimdal.init();
