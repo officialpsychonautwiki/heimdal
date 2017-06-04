@@ -37,24 +37,8 @@ Countly.prototype.device_id;
 /** @type {Countly} */
 window.Countly;
 
-class Events {
+class Heimdal {
     constructor () {
-        this._events = {};
-    }
-
-    on (evt, fn) {
-        this._events[evt] = fn;
-    }
-
-    emit (evt, ...args) {
-        this._events[evt](...args);
-    }
-}
-
-class Heimdal extends Events {
-    constructor () {
-        super();
-
         this._constants = {
             endpoint: 'https://h.psychonautwiki.org/ingress',
 
