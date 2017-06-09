@@ -56,6 +56,14 @@ class Heimdal {
         this._eventHeap = [];
 
         this._clientId = this._getClientId();
+
+        this._ensureListeners();
+    }
+
+    _ensureListeners () {
+        window['addEventListener']('unload', () => {
+            this._lastResortStrategies();
+        }, false);
     }
 
     _getClientId () {
@@ -117,6 +125,10 @@ class Heimdal {
                 return 2;
             }
         } catch(e) {}
+    }
+
+    _lastResortStrategies () {
+
     }
 
     _obtainEventHeap () {
