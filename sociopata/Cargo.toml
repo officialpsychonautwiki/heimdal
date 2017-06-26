@@ -1,0 +1,12 @@
+[package]
+authors = ["Kenan Sulayman <kenan@sly.mn>"]
+name = "sociopata"
+version = "0.1.0"
+
+[dependencies]
+lazy_static = "0.2.8"
+rand = "0.3.15"
+redis = "0.8.0"
+rocket = "0.2.8"
+rocket_codegen = "0.2.8"
+rocket_contrib = "0.2.8"
