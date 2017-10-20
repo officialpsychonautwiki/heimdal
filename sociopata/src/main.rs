@@ -8,7 +8,7 @@ extern crate rocket;
 extern crate rand;
 extern crate redis;
 
-use rocket::http::{Cookie, Cookies, CookieJar};
+use rocket::http::{Cookie, Cookies};
 
 use rand::Rng;
 
@@ -19,7 +19,7 @@ use rocket::Outcome;
 use rocket::request::{self, Request, FromRequest};
 use rocket::response::content::JavaScript;
 use rocket::Response;
-use rocket_contrib::{JSON, Value};
+use rocket_contrib::{Json, Value};
 
 use std::io::Cursor;
 use std::env;
@@ -55,7 +55,7 @@ lazy_static! {
 
 /* Track sid and cid tuples */
 #[get("/b/<sid>/<cid>")]
-fn beacon<'a>(sid: &'a str, cid: &'a str) -> Response<'a> {
+fn beacon<'a>(sid: String, cid: String) -> Response<'a> {
     Response::build()
         .sized_body(Cursor::new(SMALL_GIF.clone()))
         .status(Status::Ok)
@@ -64,7 +64,7 @@ fn beacon<'a>(sid: &'a str, cid: &'a str) -> Response<'a> {
 }
 
 #[get("/s/<sid>/s.js")]
-fn recover(sid: &str) -> JavaScript<String> {
+fn recover(sid: String) -> JavaScript<String> {
     //JavaScript(format!("window._sco=function(c){{var x=document.createElement('img');x.src='/u/b/{}/'+c;document.body.appendChild(x)}}", sid))
     JavaScript(format!("window._sci={:?}", sid))
 }
@@ -91,7 +91,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for RefKey {
                 .take(32)
                 .collect::<String>();
 
-        if let Some(cookie) = request.cookies().find("_sri") {
+        if let Some(cookie) = request.cookies().get("_sri") {
             println!("{:?}", cookie);
 
             let rust_url = env::var("RUST_URL").unwrap_or("redis://127.0.0.1/".to_string());
@@ -129,7 +129,7 @@ fn auth(sid: RefKey) -> Redirect {
 }
 
 #[get("/r/<cid>")]
-fn cid_register<'a>(jar: &Cookies, cid: &'a str) -> () {
+fn cid_register(mut jar: Cookies, cid: String) -> () {
     let cookie = Cookie::build("_sri", cid.to_string())
         .path("/u")
         .secure(true)
@@ -141,8 +141,8 @@ fn cid_register<'a>(jar: &Cookies, cid: &'a str) -> () {
 }
 
 #[error(404)]
-fn not_found() -> JSON<Value> {
-    JSON(json!({
+fn not_found() -> Json<Value> {
+    Json(json!({
         "status": "error",
         "reason": "Resource was not found."
     }))
