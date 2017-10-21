@@ -4,6 +4,8 @@
 extern crate rocket;
 #[macro_use] extern crate rocket_contrib;
 
+extern crate time;
+
 extern crate rand;
 
 use rocket::http::{Cookie, Cookies};
@@ -63,6 +65,11 @@ fn auth(sid: RefKey, mut jar: Cookies) -> Redirect {
     let cookie = Cookie::build("_sri", sid.0.to_string())
         .path("/")
         .secure(true)
+        // 2038
+        .expires(time::at(time::Timespec {
+            sec: 2171239453i64,
+            nsec: 0i32
+        }))
         .finish();
 
     jar.add_private(cookie);
